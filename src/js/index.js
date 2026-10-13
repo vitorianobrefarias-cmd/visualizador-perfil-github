@@ -1,40 +1,33 @@
-import { getUserByUsername } from './github-api.js';
-import {
-    clearProfileResults,
-    renderLoading,
-    renderProfile
-} from './profile-view.js';
+import { fetchGithubUser, fetchGithubUserRepos } from './github-api.js';
+import { renderProfile } from './profile-view.js';
 
 const inputSearch = document.getElementById('input-search');
 const btnSearch = document.getElementById('btn-search');
 const profileResults = document.querySelector('.profile-results');
 
-async function searchUser() {
-    const username = inputSearch.value.trim();
-
-    if (!username) {
+async function getUserProfile() {
+    const userName = inputSearch.value;
+    if (!userName) {
         alert('Por favor, digite um nome de usuário do GitHub.');
-        clearProfileResults(profileResults);
+        profileResults.innerHTML = "";
         return;
     }
-
-    renderLoading(profileResults);
-
+    profileResults.innerHTML = `<p class="loading">Carregando...</p>`;
     try {
-        const userData = await getUserByUsername(username);
-        renderProfile(profileResults, userData);
+        const userData = await fetchGithubUser(userName);
+        const userRepos = await fetchGithubUserRepos(userName);
+        renderProfile(userData, userRepos, profileResults);
     } catch (error) {
-        console.error('Erro ao buscar perfil do usuário:', error);
-
-        if (error.message === 'USER_NOT_FOUND') {
-            alert('Usuário não encontrado. Verifique o nome de usuário e tente novamente.');
-        } else {
-            alert('Ocorreu um erro ao buscar o perfil do usuário. Tente novamente.');
-        }
-
-        clearProfileResults(profileResults);
+        console.error('Erro ao buscar o perfil do usuário:', error);
+        alert('Usuário não encontrado. Por favor, verifique o nome de usuário e tente novamente.');
+        profileResults.innerHTML = "";
     }
 }
 
-btnSearch.addEventListener('click', searchUser);
+btnSearch.addEventListener('click', getUserProfile);
 
+inputSearch.addEventListener('keyup', (event) => {
+    if (event.key === 'Enter') {
+        getUserProfile();
+    }
+});

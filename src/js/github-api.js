@@ -1,15 +1,17 @@
 const BASE_URL = 'https://api.github.com';
 
-export async function getUserByUsername(username) {
-    const response = await fetch(`${BASE_URL}/users/${encodeURIComponent(username)}`);
+export async function fetchGithubUser(userName) {
+  const response = await fetch(`${BASE_URL}/users/${userName}`);
+  if (!response.ok) {
+    throw new Error('Usuário não encontrado.');
+  }
+  return await response.json();
+}
 
-    if (response.status === 404) {
-        throw new Error('USER_NOT_FOUND');
-    }
-
+export async function fetchGithubUserRepos(userName) {
+    const response = await fetch(`${BASE_URL}/users/${userName}/repos?per_page=10&sort=created`);
     if (!response.ok) {
-        throw new Error('Usuário não encontrado.');
+        throw new Error('Repositórios não encontrados.');
     }
-
-    return response.json();
+    return await response.json();
 }

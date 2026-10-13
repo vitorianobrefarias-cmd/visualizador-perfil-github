@@ -1,56 +1,46 @@
-export function renderLoading(container) {
-    const loading = document.createElement('p');
-    loading.className = 'loading';
-    loading.setAttribute('role', 'status');
-    loading.textContent = 'Carregando...';
-    container.replaceChildren(loading);
-}
+export function renderProfile(userData, userRepos, container) {
 
-export function renderProfile(container, userData) {
-    const card = document.createElement('div');
-    card.className = 'profile-card';
+  const repositoriesHTML = userRepos && userRepos.length > 0 ? userRepos.map(repo => `
+    <a href="${repo.html_url}" target="_blank">
+        <div class="repository-card">    
+            <h3>${repo.name}</h3>
+            <div class="repository-stats">
+                <span>⭐Stars: ${repo.stargazers_count}</span>
+                <span>🍴 Forks: ${repo.forks_count}</span>
+                <span>👀 Watchers: ${repo.watchers_count}</span>
+                <span>💻 Language: ${repo.language || 'Não informada'}</span>
+            </div>
+        </div>
+    </a>
+    `).join('') : `<p>Nenhum repositório encontrado.</p>`;
 
-    const avatar = document.createElement('img');
-    avatar.className = 'profile-avatar';
-    avatar.src = userData.avatar_url;
-    avatar.alt = `Avatar de ${userData.name || userData.login}`;
+  container.innerHTML = `
+    <div class="profile-card">
+      <img src="${userData.avatar_url}" alt="Avatar de ${
+    userData.name
+  }" class="profile-avatar">
+      <div class="profile-info">
+        <h2>${userData.name}</h2>
+        <p>${userData.bio || "Não possui bio cadastrada 😢."}</p>
+      </div>
+    </div>
 
-    const info = document.createElement('div');
-    info.className = 'profile-info';
+    <div class="profile-counters">
+        <div class="followers">
+            <h4>👥 Seguidores</h4>
+            <span>${userData.followers}</span>
+        </div>
+        <div class="following">
+            <h4>👥 Seguindo</h4>
+            <span>${userData.following}</span>
+        </div>
+    </div>
 
-    const name = document.createElement('h2');
-    name.textContent = userData.name || userData.login;
-
-    const bio = document.createElement('p');
-    bio.textContent = userData.bio || 'Não possui bio cadastrada.😢';
-
-    info.append(name, bio);
-    card.append(avatar, info);
-
-    const counters = document.createElement('div');
-    counters.className = 'profile-counters';
-    counters.append(
-        createCounter('followers', '👥 Seguidores', userData.followers),
-        createCounter('following', '👥 Seguindo', userData.following)
-    );
-
-    container.replaceChildren(card, counters);
-}
-
-export function clearProfileResults(container) {
-    container.replaceChildren();
-}
-
-function createCounter(className, label, value) {
-    const counter = document.createElement('div');
-    counter.className = className;
-
-    const heading = document.createElement('h4');
-    heading.textContent = label;
-
-    const count = document.createElement('span');
-    count.textContent = value;
-
-    counter.append(heading, count);
-    return counter;
+    <div class="profile-repositories">
+        <h2>Repositórios</h2>
+        <div class="repositories">
+            ${repositoriesHTML}
+        </div>
+    </div>
+  `;
 }
